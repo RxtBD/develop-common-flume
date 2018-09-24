@@ -1,4 +1,4 @@
-package org.apache.flume;
+package org.apache.flume.sink.db;
 
 import static org.junit.Assert.assertTrue;
 

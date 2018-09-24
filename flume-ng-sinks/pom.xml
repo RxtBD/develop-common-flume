@@ -48,7 +48,7 @@ limitations under the License.
     <module>flume-ng-morphline-solr-sink</module>
     <module>flume-ng-kafka-sink</module>
     <module>flume-http-sink</module>
-      <module>flume-db-sink</module>
+    <module>flume-db-sink</module>
   </modules>
 
   <profiles>
