@@ -11,7 +11,7 @@
 
     <groupId>org.apache.flume.flume-ng-sinks</groupId>
     <artifactId>flume-db-sink</artifactId>
-    <name>flume-db-sink</name>
+    <name>Flume NG DB Sink</name>
     <!-- FIXME change it to the project's website -->
     <url>http://www.example.com</url>
 
