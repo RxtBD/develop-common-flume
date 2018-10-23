@@ -17,12 +17,15 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DBEventSink extends AbstractSink implements org.apache.flume.conf.Configurable {
     private static final Logger LOG = LoggerFactory.getLogger(DBEventSink.class);
 
     private DBWriter dbWriter;
     private DBWriterFactory dbWriterFactory;
+    private Integer batchSize;    //批处理，一次性处理多少条记录
 
     public DBWriterFactory getDbWriterFactory() {
         return dbWriterFactory;
@@ -55,16 +58,26 @@ public class DBEventSink extends AbstractSink implements org.apache.flume.conf.C
         Event event = null;
         transaction.begin();
 
-        while (true) {
-            event = channel.take();
-            if (event != null) {    //如果拿到了东西，则跳出循环，进行处理
-                break;
-            }
-        }
+//        while (true) {
+//            event = channel.take();
+//            if (event != null) {    //如果拿到了东西，则跳出循环，进行处理
+//                break;
+//            }
+//        }
+        List<Event> actions = new ArrayList<>();
         try {
-            String body = new String(event.getBody(), "UTF-8");
+            for (int i = 0; i < batchSize; i++) {
+                event = channel.take();
+                if (event != null) {
+                    actions.add(event);
+                }
+            }
 
-            this.dbWriter.insert(preparedStatement, this.columnName, body);    //调用写入器，将数据写入到库中
+            for (Event e : actions) {
+                String body = new String(event.getBody(), "UTF-8");
+                this.dbWriter.insert(preparedStatement, this.columnName, body);    //调用写入器，将数据写入到库中
+            }
+
             transaction.commit();    //提交事务
             return Status.READY;
         } catch (Throwable throwable) {
@@ -165,5 +178,7 @@ public class DBEventSink extends AbstractSink implements org.apache.flume.conf.C
         Preconditions.checkNotNull(this.password, "password must be set!!!");
         this.columnName = context.getString("columnName");
         Preconditions.checkNotNull(this.columnName, "columnName must be set!!!");
+        this.batchSize = context.getInteger("batchSize");
+        Preconditions.checkNotNull(this.batchSize, "batchSize must be set!!!");
     }
 }
