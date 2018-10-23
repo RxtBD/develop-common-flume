@@ -75,7 +75,8 @@ public class DBEventSink extends AbstractSink implements org.apache.flume.conf.C
 
             for (Event e : actions) {
                 String body = new String(event.getBody(), "UTF-8");
-                this.dbWriter.insert(preparedStatement, this.columnName, body);    //调用写入器，将数据写入到库中
+//                this.dbWriter.insert(preparedStatement, this.columnName, body);    //调用写入器，将数据写入到库中
+                new MySQLWriter().insert(columnName, body);    //调用写入器，将数据写入到库中
             }
 
             transaction.commit();    //提交事务

@@ -6,14 +6,16 @@
 
 package org.apache.flume.sink.db;
 
+import org.apache.flume.Event;
+
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * MySQL写入器
  */
 public class MySQLWriter extends AbstractDBWriter {
-
     @Override
     public void insert(PreparedStatement preparedStatement, String columnName, String param) throws Exception {
         super.insert(preparedStatement, columnName, param);
@@ -28,6 +30,6 @@ public class MySQLWriter extends AbstractDBWriter {
             }
             preparedStatement.execute();//执行插入操作
         }
-
     }
+
 }
