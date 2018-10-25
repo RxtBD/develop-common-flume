@@ -64,20 +64,31 @@ public class DBEventSink extends AbstractSink implements org.apache.flume.conf.C
 //                break;
 //            }
 //        }
-        List<Event> actions = new ArrayList<>();
+//        List<Event> actions = new ArrayList<>();
         try {
             for (int i = 0; i < batchSize; i++) {
                 event = channel.take();
                 if (event != null) {
-                    actions.add(event);
+//                    actions.add(event);
+                    String body = new String(event.getBody(), "UTF-8");
+                    String[] arrs = body.split(",");
+
+                    for (int j = 1; j <= arrs.length; j++) {
+                        preparedStatement.setString(j, arrs[j-1]);
+                    }
+
+                    preparedStatement.addBatch();    //将一个sql加入命令列表
                 }
             }
 
-            for (Event e : actions) {
-                String body = new String(event.getBody(), "UTF-8");
-//                this.dbWriter.insert(preparedStatement, this.columnName, body);    //调用写入器，将数据写入到库中
-                new MySQLWriter().insert(columnName, body);    //调用写入器，将数据写入到库中
-            }
+            preparedStatement.executeBatch();    //批量执行
+            connection.commit();    //语句执行完毕，提交本事务
+
+//            for (Event e : actions) {
+//                String body = new String(event.getBody(), "UTF-8");
+////                this.dbWriter.insert(preparedStatement, this.columnName, body);    //调用写入器，将数据写入到库中
+////                new MySQLWriter().insert(columnName, body);    //调用写入器，将数据写入到库中
+//            }
 
             transaction.commit();    //提交事务
             return Status.READY;
@@ -108,6 +119,7 @@ public class DBEventSink extends AbstractSink implements org.apache.flume.conf.C
 
             Class.forName(this.class4Name);
             this.connection = DriverManager.getConnection(this.url, this.username, this.password);
+            this.connection.setAutoCommit(false);    //关闭事务的自动提交
 
             //拼装预编译的sql
             StringBuffer sql = new StringBuffer("insert into ");
